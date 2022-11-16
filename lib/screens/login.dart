@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+FirebaseAuth auth = FirebaseAuth.instance;
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -8,8 +11,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
   final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-    foregroundColor: Colors.white,
+    // foregroundColor: Colors.white,
     backgroundColor: Colors.black,
     minimumSize: const Size(88, 36),
     padding: const EdgeInsets.symmetric(
@@ -19,6 +25,22 @@ class _LoginPageState extends State<LoginPage> {
       borderRadius: BorderRadius.all(Radius.circular(2)),
     ),
   );
+
+  Future<void> signIn(String email, String password) async {
+    try {
+      final credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      Navigator.pushNamed(context, '/');
+    } on FirebaseAuthException catch (e) {
+      // Navigator.pushNamed(context, '/');
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,10 +65,12 @@ class _LoginPageState extends State<LoginPage> {
                     children: <Widget>[
                       TextFormField(
                         decoration: const InputDecoration(labelText: "Email"),
+                        controller: emailController,
                       ),
                       TextFormField(
                         decoration:
                             const InputDecoration(labelText: "Password"),
+                        controller: passwordController,
                         obscureText: true,
                       ),
                       Container(
@@ -55,7 +79,11 @@ class _LoginPageState extends State<LoginPage> {
                         child: TextButton(
                           style: flatButtonStyle,
                           onPressed: () {
-                            Navigator.pushNamed(context, '/');
+                            // print(emailController.text);
+                            // print(passwordController.text);
+                            signIn(
+                                emailController.text, passwordController.text);
+                            // Navigator.pushNamed(context, '/');
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12.0),
